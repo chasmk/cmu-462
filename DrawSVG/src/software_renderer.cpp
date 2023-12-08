@@ -39,7 +39,7 @@ namespace CMU462
     Vector2D d = transform(Vector2D(svg.width, svg.height));
     d.x++;
     d.y++;
-
+    //printf("%f %f\n", svg.width, svg.height);
     rasterize_line(a.x, a.y, b.x, b.y, Color::Black);
     rasterize_line(a.x, a.y, c.x, c.y, Color::Black);
     rasterize_line(d.x, d.y, b.x, b.y, Color::Black);
@@ -338,6 +338,28 @@ namespace CMU462
   {
     // Task 3:
     // Implement triangle rasterization
+    //先找到三角形的bbox
+    float x_lt = min(min(x0, x1), x2);
+    float x_rd = max(max(x0, x1), x2);
+    float y_lt = min(min(y0, y1), y2);
+    float y_rd = max(max(y0, y1), y2);
+    Vector3D AB(x1-x0, y1-y0, 0);
+    Vector3D BC(x2-x1, y2-y1, 0);
+    Vector3D CA(x0-x2, y0-y2, 0);
+    for (float x = x_lt; x <= ceil(x_rd); x+=1) {
+      for (float y = y_lt; y <= ceil(y_rd); y+=1) {
+        Vector3D PA(x0-x,y0-y, 0);
+        Vector3D PB(x1-x,y1-y, 0);
+        Vector3D PC(x2-x,y2-y, 0);
+        //只要计算叉积的z分量即可
+        float z1 = PA.x*AB.y - PA.y*AB.x;
+        float z2 = PB.x*BC.y - PB.y*BC.x;
+        float z3 = PC.x*CA.y - PC.y*CA.x;
+        if (z1>0&&z2>0&&z3>0 || z1<0&&z2<0&&z3<0) {
+          rasterize_point(x, y, color);
+        }
+      }
+    }
   }
 
   void SoftwareRendererImp::rasterize_image(float x0, float y0,
